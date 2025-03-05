@@ -76,10 +76,13 @@ const selectDateRange = (date: string) => {
   (startDate && new Date(startDate) > new Date(date))
  ) {
   dateRangeParent.value = [date, undefined];
+  return false;
  } else if (startDate && !dateRangeParent.value[1]) {
   dateRangeParent.value = [startDate, date];
+  return true;
  } else if (dateRangeParent.value[1]) {
   dateRangeParent.value = [date, undefined];
+  return false;
  }
 };
 
@@ -132,10 +135,11 @@ const options = computed<Highcharts.Options>(() => {
 
   plotOptions: {
    series: {
+    allowPointSelect: true,
     point: {
      events: {
       click: function () {
-       selectDateRange(String(this.category));
+       this.select(selectDateRange(String(this.category)), true);
       },
      },
     },
