@@ -132,7 +132,15 @@ const options = computed<Highcharts.Options>(() => {
     text: "Units",
    },
   },
-
+  tooltip: {
+   useHTML: true,
+   formatter: function () {
+    const reading = houseReadings[this.index];
+    return `<strong>Date:</strong> ${reading.created_at}<br>
+              <strong>${this.series.name}:</strong> ${this.y}<br>
+   ${reading.comment ? `<strong>Comment:</strong> ${reading.comment}` : ""} `;
+   },
+  },
   plotOptions: {
    series: {
     allowPointSelect: true,

@@ -6,6 +6,7 @@ export interface Reading {
     electric_factory: number;
     water_factory: number;
     water_private: number;
+    comment: string | null;
 }
 
 export interface Usage {
