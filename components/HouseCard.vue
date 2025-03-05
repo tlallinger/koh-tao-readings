@@ -1,23 +1,16 @@
 <template>
  <div class="p-4 border rounded shadow-md">
-  <highcharts :options="options(houseId)" />
+  <highcharts :options="options" />
   <h2 class="text-xl font-semibold mb-2">House {{ houseId }}</h2>
-  <p
-   v-if="houseUsage && dateRange[0] && dateRange[1]"
-   class="text-sm text-gray-700"
-  >
+  <p v-if="houseUsage" class="text-sm text-gray-700">
    From
    {{ new Date(houseUsage.start_created_at).toLocaleDateString("de-DE") }}
    to
    {{ new Date(houseUsage.end_created_at).toLocaleDateString("de-DE") }}
   </p>
-  <div
-   v-if="dateRange[0] && dateRange[1]"
-   class="flex justify-between items-center gap-2"
-  >
+  <div v-if="houseUsage" class="flex justify-between items-center gap-2">
    <div>
     <div
-     v-if="houseUsage"
      v-for="(value, key) in houseUsage"
      :key="key + value"
      class="mt-1 text-md text-gray-700"
@@ -36,7 +29,7 @@
      </template>
     </div>
    </div>
-   <div v-if="houseUsage" class="mt-2 text-lg">
+   <div class="mt-2 text-lg">
     Total:
     {{
      Object.keys(houseUsage)
@@ -63,19 +56,12 @@ const props = defineProps<{
  usage: Usage[];
 }>();
 
-const emit = defineEmits(["update:dateRange", "update:usage"]);
+const emit = defineEmits(["update:dateRange"]);
 
 const dateRangeParent = computed({
  get: () => props.dateRange,
  set: (value: [string | undefined, string | undefined]) => {
   emit("update:dateRange", value);
- },
-});
-
-const usageParent = computed({
- get: () => props.usage,
- set: (value: Usage[]) => {
-  emit("update:usage", value);
  },
 });
 
@@ -85,7 +71,6 @@ const isValidUsageKey = (key: keyof Usage | string): key is UsageKey => {
 
 const selectDateRange = (date: string) => {
  const startDate = dateRangeParent.value[0];
- usageParent.value = [];
  if (
   dateRangeParent.value.length === 0 ||
   (startDate && new Date(startDate) > new Date(date))
@@ -101,13 +86,13 @@ const selectDateRange = (date: string) => {
 const replacePrefix = (key: keyof Usage, prefix: "start" | "end") => {
  return key.replace(/(start|end|usage)/, prefix) as keyof Usage;
 };
-
-const options = (houseId: number) => {
+const options = computed<Highcharts.Options>(() => {
  const houseReadings = props.readings
-  .filter((r) => r.house_id === houseId)
+  .filter((r) => r.house_id === props.houseId)
   .sort(
    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
+
  return {
   chart: {
    type: "line",
@@ -150,33 +135,34 @@ const options = (houseId: number) => {
     point: {
      events: {
       click: function () {
-       selectDateRange(
-        (this as { category: string; click: () => void }).category
-       );
+       selectDateRange(String(this.category));
       },
      },
     },
    },
   },
-
   series: [
    {
+    type: "line",
     name: "Electric Government",
     data: houseReadings.map((r) => r.electric_government),
    },
    {
+    type: "line",
     name: "Electric Factory",
     data: houseReadings.map((r) => r.electric_factory),
    },
    {
+    type: "line",
     name: "Water Factory",
     data: houseReadings.map((r) => r.water_factory),
    },
    {
+    type: "line",
     name: "Water Private",
     data: houseReadings.map((r) => r.water_private),
    },
   ],
  };
-};
+});
 </script>

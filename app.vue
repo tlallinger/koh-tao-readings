@@ -24,7 +24,7 @@
     v-for="houseId in houseIds"
     :key="houseId"
     v-model:dateRange="dateRange"
-    v-model:usage="usage"
+    :usage="usage"
     :houseId="houseId"
     :houseUsage="houseUsageMap[houseId]"
     :readings="readings"
